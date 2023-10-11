@@ -142,6 +142,11 @@ class Assignment extends Stmt {
     }
     
     // TODO: [Insert the code of display()]
+    public void display(int level) {
+        Indent.display(level, "Assignment");
+        id.display(level + 1);
+        expr.display(level + 1);
+    }
 }
 
 class If extends Stmt {
@@ -374,6 +379,12 @@ class Binary extends Expr {
     } // binary
     
     // TODO: [Insert the code of display()]
+    public void display(int level) {
+        Indent.display(level, "Binary");
+        op.display(level + 1);
+        expr1.display(level + 1);
+        expr2.display(level + 1);
+    }
 }
 
 class Unary extends Expr {
@@ -387,7 +398,11 @@ class Unary extends Expr {
     } // unary
     
     // TODO: [Insert the code of display()]
-
+    public void display(int level) {
+        Indent.display(level, "Unary");
+        op.display(level + 1);
+        expr.display(level + 1);
+    }
 }
 
 class Operator {
@@ -406,4 +421,7 @@ class Operator {
     }
     
     // TODO: [Insert the code of display()]
+    public void display(int level) {
+
+    }
 }
