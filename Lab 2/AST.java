@@ -314,8 +314,8 @@ class Value extends Expr {
     
     Value(Type t) {
         type = t;  
-        if (type == Type.INT) value = new Integer(0);
-        if (type == Type.BOOL) value = new Boolean(false);
+        if (type == Type.INT) value = Integer.valueOf(0);
+        if (type == Type.BOOL) value = Boolean.valueOf(false);
         if (type == Type.STRING) value = "";
         undef = false;
     }

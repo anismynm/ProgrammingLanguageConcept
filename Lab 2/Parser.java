@@ -176,6 +176,8 @@ public class Parser {
     //
     // parse read statement
     // 
+    match(Token.READ);
+    Expr e = expr();
 	return null;
     }
 
@@ -185,7 +187,9 @@ public class Parser {
     //
     // parse print statement
     // 
-	return null;
+        match(Token.PRINT);
+        Expr e = expr();
+	    return new Print(e);
     }
 
     private Return returnStmt() {
