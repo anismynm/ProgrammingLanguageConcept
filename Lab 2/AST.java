@@ -50,6 +50,10 @@ class Decl extends Command {
     } // declaration
    
     // TODO: [Insert the code of display()]
+    public void display(int level) {
+        Indent.display(level, "Decl");
+        type.display(level + 1);
+    }
 }
 
 class Functions extends ArrayList<Function> {
@@ -88,6 +92,9 @@ class Type {
     protected Type(String s) { id = s; }
     public String toString ( ) { return id; }
     // TODO: [Insert the code of display()]
+    public void display(int level) {
+        
+    }
 }
 
 class ProtoType extends Type {
