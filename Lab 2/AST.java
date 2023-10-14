@@ -3,7 +3,7 @@
 import java.util.*;
 
 class Indent {
-    public static void display(int level, String s) {     // Level만큼 tab 넣은 후 원하는 문구 출력
+    public static void display(int level, String s) {     
         String tab = "";
         System.out.println();
         for (int i=0; i<level; i++)
@@ -25,9 +25,13 @@ class Decls extends ArrayList<Decl> {
     Decls(Decl d) {
 	    this.add(d);
     }
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
 	public void display(int level){
 		// Fill code here
+        Indent.display(level, "Decls");
+        for (Decl decl : this) {
+            decl.display(level + 1);
+        }
 	}    
 }
 
@@ -49,10 +53,14 @@ class Decl extends Command {
         id = new Identifier(s); type = t; expr = e;
     } // declaration
    
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
     public void display(int level) {
         Indent.display(level, "Decl");
         type.display(level + 1);
+        id.display(level + 1);
+        if (expr != null) {
+            expr.display(level + 1);
+        }
     }
 }
 
@@ -91,9 +99,9 @@ class Type {
     protected String id;
     protected Type(String s) { id = s; }
     public String toString ( ) { return id; }
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
     public void display(int level) {
-        
+        Indent.display(level, "Type: " + id);
     }
 }
 
@@ -129,7 +137,13 @@ class Stmts extends Stmt {
     Stmts(Stmt s) {
 	     stmts.add(s);
     }
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
+    public void display(int level) {
+        Indent.display(level, "Stmts");
+        for (Stmt stmt : stmts) {
+            stmt.display(level + 1);
+        }
+    }
 }
 
 class Assignment extends Stmt {
@@ -148,7 +162,7 @@ class Assignment extends Stmt {
         expr = e;
     }
     
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
     public void display(int level) {
         Indent.display(level, "Assignment");
         id.display(level + 1);
@@ -169,7 +183,13 @@ class If extends Stmt {
         expr = t; stmt1 = tp; stmt2 = ep; 
     }
     
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
+    public void display(int level) {
+        Indent.display(level, "If");
+        expr.display(level + 1);
+        stmt1.display(level + 1);
+        stmt2.display(level + 1);
+    }
 }
 
 class While extends Stmt {
@@ -181,7 +201,12 @@ class While extends Stmt {
         expr = t; stmt = b;
     }
     
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
+    public void display(int level) {
+        Indent.display(level, "While");
+        expr.display(level + 1);
+        stmt.display(level + 1);
+    }
 }
 
 class Let extends Stmt {
@@ -202,7 +227,12 @@ class Let extends Stmt {
         stmts = ss;
     }
     
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
+    public void display(int level) {
+        Indent.display(level, "Let");
+        decls.display(level + 1);
+        stmts.display(level + 1);
+    }
 }
 
 class Read extends Stmt {
@@ -213,7 +243,11 @@ class Read extends Stmt {
         id = v;
     }
     
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
+    public void display(int level) {
+        Indent.display(level, "Read");
+        id.display(level + 1);
+    }
 }
 
 class Print extends Stmt {
@@ -223,7 +257,11 @@ class Print extends Stmt {
     Print (Expr e) {
         expr = e;
     }
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
+    public void display(int level) {
+        Indent.display(level, "Print");
+        expr.display(level + 1);
+    }
 }
 
 class Return extends Stmt {
@@ -289,7 +327,10 @@ class Identifier extends Expr {
         return id.equals(s);
     }
     
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
+    public void display(int level) {
+        Indent.display(level, "Identifier: " + id);
+    }
 }
 
 class Array extends Expr {
@@ -374,6 +415,9 @@ class Value extends Expr {
     }
     
     // TODO: [Insert the code of display()]
+    public void display(int level) {
+        Indent.display(level, "Value: " + value); // 일단 여기에 undef(bool), type은 출력이 안 될수도 있으니 보고 수정.
+    }
 }
 
 class Binary extends Expr {
@@ -385,7 +429,7 @@ class Binary extends Expr {
         op = o; expr1 = e1; expr2 = e2;
     } // binary
     
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
     public void display(int level) {
         Indent.display(level, "Binary");
         op.display(level + 1);
@@ -404,7 +448,7 @@ class Unary extends Expr {
         expr = e;
     } // unary
     
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
     public void display(int level) {
         Indent.display(level, "Unary");
         op.display(level + 1);
@@ -427,8 +471,8 @@ class Operator {
 	return val.equals(obj); 
     }
     
-    // TODO: [Insert the code of display()]
+    // TODO: [Insert the code of display()] done!
     public void display(int level) {
-
+        Indent.display(level, "Operator: " + val);
     }
 }

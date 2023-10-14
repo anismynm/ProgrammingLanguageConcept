@@ -36,12 +36,12 @@ public class Parser {
 	        Decl d = decl();
 	        return d;
 	    }
-	/*
+	
 	    if (token == Token.FUN) {
 	        Function f = function();
 	        return f;
 	    }
-	*/
+	
 	    if (token != Token.EOF) {
 	        Stmt s = stmt();
             return s;
@@ -75,7 +75,7 @@ public class Parser {
         return ds;             
     }
 
-/*
+
     private Function function() {
     // <function>  -> fun <type> id(<params>) <stmt> 
         match(Token.FUN);
@@ -100,7 +100,7 @@ public class Parser {
         return params;
     }
 
-*/
+
 
     private Type type () {
     // <type>  ->  int | bool | void | string 
@@ -126,7 +126,7 @@ public class Parser {
         Stmt s = new Empty();
         switch (token) {
 	    case SEMICOLON:
-            match(token.SEMICOLON); return s;
+            match(Token.SEMICOLON); return s;
         case LBRACE:			
 	        match(Token.LBRACE);		
             s = stmts();
@@ -170,18 +170,19 @@ public class Parser {
         return new Let(ds, null, ss);
     }
 
-    // TODO: [Complete the code of readStmt()]
+    // TODO: [Complete the code of readStmt()] done!
     private Read readStmt() {
     // <readStmt> -> read id;
     //
     // parse read statement
     // 
-    match(Token.READ);
-    Expr e = expr();
-	return null;
+        match(Token.READ);
+        Identifier id = new Identifier(match(Token.ID));
+        match(Token.SEMICOLON);
+        return new Read(id);
     }
 
-    // TODO: [Complete the code of printStmt()]
+    // TODO: [Complete the code of printStmt()] done!
     private Print printStmt() {
     // <printStmt> -> print <expr>;
     //
@@ -189,6 +190,7 @@ public class Parser {
     // 
         match(Token.PRINT);
         Expr e = expr();
+        match(Token.SEMICOLON);
 	    return new Print(e);
     }
 
@@ -203,10 +205,11 @@ public class Parser {
     private Stmt assignment() {
     // <assignment> -> id = <expr>;   
         Identifier id = new Identifier(match(Token.ID));
-	/*
-	    if (token == Token.LPAREN)    // function call 
-	        return call(id);
-	*/
+	
+	    if (token == Token.LPAREN) {
+            return call(id);
+        }   // function call 
+	
 
         match(Token.ASSIGN);
         Expr e = expr();
@@ -214,7 +217,7 @@ public class Parser {
         return new Assignment(id, e);
     }
 
-/*
+
     private Call call(Identifier id) {
     // <call> -> id(<expr>{,<expr>});
     //
@@ -222,7 +225,7 @@ public class Parser {
     //
 	return null;
     }
-*/
+
 
     private If ifStmt () {
     // <ifStmt> -> if (<expr>) then <stmt> [else <stmt>]
@@ -240,13 +243,18 @@ public class Parser {
         return new If(e, s1, s2);
     }
 
-    // TODO: [Complete the code of whileStmt()]
+    // TODO: [Complete the code of whileStmt()] done!
     private While whileStmt () {
     // <whileStmt> -> while (<expr>) <stmt>
     //
     // parse while statement
     //
-        return null;
+        match(Token.WHILE);
+        match(Token.LPAREN);
+        Expr e = expr();
+        match(Token.RPAREN);
+        Stmt s1 = stmt();
+        return new While(e, s1);
     }
 
     private Expr expr () {
@@ -265,20 +273,32 @@ public class Parser {
         }
 
         Expr e = bexp();
-        // TODO: [Complete the code of logical operations for <expr> -> <bexp> {& <bexp> | '|'<bexp>}]
+        // TODO: [Complete the code of logical operations for <expr> -> <bexp> {& <bexp> | '|'<bexp>}] done!
 		//
 		// parse logical operations
 		//
+        while (token == Token.AND || token == Token.OR) {
+            Operator op = new Operator(match(token));
+            Expr e2 = bexp();
+
+            e = new Binary(op, e, e2);
+        }
         return e;
     }
 
-    // TODO: [Complete the code of bexp()]
+    // TODO: [Complete the code of bexp()] done!
     private Expr bexp() {
         // <bexp> -> <aexp> [ (< | <= | > | >= | == | !=) <aexp> ]
         Expr e = aexp();
 	//
 	// parse relational operations
 	//
+        if (token == Token.LT || token == Token.LTEQ || token == Token.GT || token == Token.GTEQ || token == Token.EQUAL || token == Token.NOTEQ) {
+            Operator op = new Operator(match(token));
+            Expr e2 = aexp();
+
+            e = new Binary(op, e ,e2);
+        }
         return e;
     }
   
