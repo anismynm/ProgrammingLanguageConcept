@@ -1,5 +1,6 @@
 // Parser.java
 // Parser for language S
+// 컴퓨터공학전공 2020112736 안성현
 
 public class Parser {
     Token token;          // current token 
@@ -175,7 +176,7 @@ public class Parser {
     // <readStmt> -> read id;
     //
     // parse read statement
-    // 
+    // Read 구문에 관해 Parsing을 진행하는 함수이다. 'Read id;' 문장에 대해 순서대로 match한 후, AST문을 리턴하도록 구현하였다.
         match(Token.READ);
         Identifier id = new Identifier(match(Token.ID));
         match(Token.SEMICOLON);
@@ -187,7 +188,7 @@ public class Parser {
     // <printStmt> -> print <expr>;
     //
     // parse print statement
-    // 
+    // Print 구문에 관해 Parsing을 진행하는 함수이다. 'Print <expr>;' 문장에 대해 순서대로 match한 후, AST문을 리턴하도록 구현하였다.
         match(Token.PRINT);
         Expr e = expr();
         match(Token.SEMICOLON);
@@ -248,7 +249,7 @@ public class Parser {
     // <whileStmt> -> while (<expr>) <stmt>
     //
     // parse while statement
-    //
+    // While 구문에 관해 Parsing을 진행하는 함수이다. 'While (<expr>) <stmt>;' 문장에 대해 순서대로 match한 후, AST문을 리턴하도록 구현하였다.
         match(Token.WHILE);
         match(Token.LPAREN);
         Expr e = expr();
@@ -276,7 +277,7 @@ public class Parser {
         // TODO: [Complete the code of logical operations for <expr> -> <bexp> {& <bexp> | '|'<bexp>}] done!
 		//
 		// parse logical operations
-		//
+		// 논리연산자를 처리한다. AND, OR token이 식별이 될 경우, 새 Operator를 생성하고 두개의 <bexp>를 Binary로 연결한다. 이는 while문을 반복되어 리턴된다.
         while (token == Token.AND || token == Token.OR) {
             Operator op = new Operator(match(token));
             Expr e2 = bexp();
@@ -292,7 +293,7 @@ public class Parser {
         Expr e = aexp();
 	//
 	// parse relational operations
-	//
+	// 비교연산자를 처리한다. 비교연산자들이 식별될 경우, 새로운 Operator를 생성하고 두개의 <aexp>를 Binary로 연결하여 리턴한다.
         if (token == Token.LT || token == Token.LTEQ || token == Token.GT || token == Token.GTEQ || token == Token.EQUAL || token == Token.NOTEQ) {
             Operator op = new Operator(match(token));
             Expr e2 = aexp();
@@ -407,7 +408,7 @@ public class Parser {
 
                 try {
                     command = parser.command();
-		            // if (command != null) command.display(0);    // display AST, TODO: [Uncomment this line]
+		            if (command != null) command.display(0);    // display AST, TODO: [Uncomment this line]
                 } catch (Exception e) {
                     System.err.println(e);
                 }
@@ -423,7 +424,7 @@ public class Parser {
 
                 try {
 		             command = parser.command();
-		             // if (command != null) command.display(0);      // display AST, TODO: [Uncomment this line]
+		             if (command != null) command.display(0);      // display AST, TODO: [Uncomment this line]
                 } catch (Exception e) {
                     System.err.println(e); 
                 }

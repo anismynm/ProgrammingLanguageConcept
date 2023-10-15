@@ -1,5 +1,7 @@
 // AST.java
 // AST for S
+// 컴퓨터공학전공 2020112736 안성현
+
 import java.util.*;
 
 class Indent {
@@ -7,7 +9,7 @@ class Indent {
         String tab = "";
         System.out.println();
         for (int i=0; i<level; i++)
-            tab = tab + "  ";
+            tab = tab + "	";
         System.out.print(tab + s);
    }
 } 
@@ -26,11 +28,12 @@ class Decls extends ArrayList<Decl> {
 	    this.add(d);
     }
     // TODO: [Insert the code of display()] done!
+    // 여러개의 선언문을 출력하는 함수이다. "Decls"를 출력하여 표시하고 다음 줄에 선언 목록들에 대해서 각 'decl' 객체에 대한 출력을 진행한다.
 	public void display(int level){
 		// Fill code here
         Indent.display(level, "Decls");
         for (Decl decl : this) {
-            decl.display(level + 1);
+            decl.display(level+1);
         }
 	}    
 }
@@ -54,12 +57,13 @@ class Decl extends Command {
     } // declaration
    
     // TODO: [Insert the code of display()] done!
+    // 선언문에 대한 출력을 담당하는 함수이다. 들여쓰기 레벨에 따라 "Decl"을 표시하고 다음 줄에 type, id 객체와 있을 경우 expr 객체에 대한 출력을 진행한다.
     public void display(int level) {
         Indent.display(level, "Decl");
-        type.display(level + 1);
-        id.display(level + 1);
+        type.display(level+1);
+        id.display(level+1);
         if (expr != null) {
-            expr.display(level + 1);
+            expr.display(level+1);
         }
     }
 }
@@ -100,6 +104,7 @@ class Type {
     protected Type(String s) { id = s; }
     public String toString ( ) { return id; }
     // TODO: [Insert the code of display()] done!
+    // type 객체에 대한 출력을 담당하는 함수이다. 들여쓰기 레벨에 따라 "Type: " 문자열과 id 객체를 차례로 출력한다.
     public void display(int level) {
         Indent.display(level, "Type: " + id);
     }
@@ -138,10 +143,11 @@ class Stmts extends Stmt {
 	     stmts.add(s);
     }
     // TODO: [Insert the code of display()] done!
+    // Stmts에 대한 출력을 담당하는 함수이다. "Stmts"를 출력하여 표시해주고 Stmts 객체에 포함된 모든 Stmt 객체에 대한 출력함수를 호출하여 출력을 진행한다.
     public void display(int level) {
         Indent.display(level, "Stmts");
         for (Stmt stmt : stmts) {
-            stmt.display(level + 1);
+            stmt.display(level+1);
         }
     }
 }
@@ -163,10 +169,11 @@ class Assignment extends Stmt {
     }
     
     // TODO: [Insert the code of display()] done!
+    // 할당문에 대한 출력을 담당하는 함수이다. 들여쓰기 레벨에 따라 "Assignment"를 출력하여 표시해주고 다음 줄에 id, type 객체를 차례로 출력한다.
     public void display(int level) {
         Indent.display(level, "Assignment");
-        id.display(level + 1);
-        expr.display(level + 1);
+        id.display(level+1);
+        expr.display(level+1);
     }
 }
 
@@ -184,11 +191,12 @@ class If extends Stmt {
     }
     
     // TODO: [Insert the code of display()] done!
+    // if문에 대한 출력을 담당하는 함수이다. 들여쓰기 레벨에 따라 "If"를 출력하고 표시해주고, 다음 줄에 expr, stmt1, stmt2 객체를 차례로 출력해준다.
     public void display(int level) {
         Indent.display(level, "If");
-        expr.display(level + 1);
-        stmt1.display(level + 1);
-        stmt2.display(level + 1);
+        expr.display(level+1);
+        stmt1.display(level+1);
+        stmt2.display(level+1);
     }
 }
 
@@ -202,10 +210,11 @@ class While extends Stmt {
     }
     
     // TODO: [Insert the code of display()] done!
+    // while문에 대한 출력을 담당하는 함수이다. 들여쓰기 레벨에 따라 "while"을 출력하여 표시해주고, 다음 줄에 expr, stmt 객체를 차례로 출력해준다.
     public void display(int level) {
         Indent.display(level, "While");
-        expr.display(level + 1);
-        stmt.display(level + 1);
+        expr.display(level+1);
+        stmt.display(level+1);
     }
 }
 
@@ -228,10 +237,11 @@ class Let extends Stmt {
     }
     
     // TODO: [Insert the code of display()] done!
+    // Let문에 대한 출력을 담당하는 함수이다. 들여쓰기 레벨에 따라 "Let"를 출력하여 표시해주고 다음 줄에 decls, stmts 객체에 대한 출력을 진행한다.
     public void display(int level) {
         Indent.display(level, "Let");
-        decls.display(level + 1);
-        stmts.display(level + 1);
+        decls.display(level+1);
+        stmts.display(level+1);
     }
 }
 
@@ -244,9 +254,10 @@ class Read extends Stmt {
     }
     
     // TODO: [Insert the code of display()] done!
+    // Read 구문에 대한 출력을 담당하는 함수이다. 들여쓰기 레벨에 따라 "Read"를 출력하여 표시해주고 다음 줄에 id 객체에 대한 출력을 진행한다.
     public void display(int level) {
         Indent.display(level, "Read");
-        id.display(level + 1);
+        id.display(level+1);
     }
 }
 
@@ -258,9 +269,10 @@ class Print extends Stmt {
         expr = e;
     }
     // TODO: [Insert the code of display()] done!
+    // Print 구문에 대한 출력을 담당하는 함수이다. 들여쓰기 레벨에 따라 "Print"를 출력하여 표시해주고 다음줄에 expr 객체에 대한 출력을 진행한다.
     public void display(int level) {
         Indent.display(level, "Print");
-        expr.display(level + 1);
+        expr.display(level+1);
     }
 }
 
@@ -328,6 +340,7 @@ class Identifier extends Expr {
     }
     
     // TODO: [Insert the code of display()] done!
+    // id에 대한 출력을 담당하는 함수이다. 들여쓰기 레벨에 따라 "Identifier: "을 출력한 후, id 객체를 출력한다.
     public void display(int level) {
         Indent.display(level, "Identifier: " + id);
     }
@@ -415,8 +428,9 @@ class Value extends Expr {
     }
     
     // TODO: [Insert the code of display()]
+    // value에 대한 출력을 담당하는 함수이다. 들여쓰기 레벨에 따라 "Value: "를 출력한 후, value 객체를 출력해준다.
     public void display(int level) {
-        Indent.display(level, "Value: " + value); // 일단 여기에 undef(bool), type은 출력이 안 될수도 있으니 보고 수정.
+        Indent.display(level, "Value: " + value); 
     }
 }
 
@@ -430,11 +444,12 @@ class Binary extends Expr {
     } // binary
     
     // TODO: [Insert the code of display()] done!
+    // Binary 객체에 대한 출력을 담당한다. 들여쓰기 레벨에 따라 "Binary"를 출력하여 표시해주고 다음 줄부터 차례대로 op, expr1, expr2 객체에 대한 출력을 진행한다.
     public void display(int level) {
         Indent.display(level, "Binary");
-        op.display(level + 1);
-        expr1.display(level + 1);
-        expr2.display(level + 1);
+        op.display(level+1);
+        expr1.display(level+1);
+        expr2.display(level+1);
     }
 }
 
@@ -449,10 +464,11 @@ class Unary extends Expr {
     } // unary
     
     // TODO: [Insert the code of display()] done!
+    // Unary 객체에 대한 출력을 담당한다. 들여쓰기 레벨에 따라 "Unary"를 출력하여 표시해주고 다음 줄부터 차례대로 op, expr 객체에 대한 출력을 진행한다.
     public void display(int level) {
         Indent.display(level, "Unary");
-        op.display(level + 1);
-        expr.display(level + 1);
+        op.display(level+1);
+        expr.display(level+1);
     }
 }
 
@@ -472,6 +488,7 @@ class Operator {
     }
     
     // TODO: [Insert the code of display()] done!
+    // Operator 객체에 대한 출력을 담당한다. 들여쓰기 레벨에 따라 "Operator: "를 출력하고 val 객체를 출력한다.
     public void display(int level) {
         Indent.display(level, "Operator: " + val);
     }
