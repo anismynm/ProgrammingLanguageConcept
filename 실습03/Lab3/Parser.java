@@ -1,6 +1,5 @@
 // Parser.java
 // Parser for language S
-// 컴퓨터공학전공 2020112736 안성현
 
 public class Parser {
     Token token;          // current token 
@@ -32,17 +31,11 @@ public class Parser {
     }
   
     public Command command() {
-    // <command> ->  <decl> | <function> | <stmt>
+    // <command> ->  <decl> | <stmt>
 	    if (isType()) {
 	        Decl d = decl();
 	        return d;
 	    }
-	
-	    if (token == Token.FUN) {
-	        Function f = function();
-	        return f;
-	    }
-	
 	    if (token != Token.EOF) {
 	        Stmt s = stmt();
             return s;
@@ -50,7 +43,7 @@ public class Parser {
 	    return null;
     }
 
-    private Decl decl() {
+    private Decl decl() { 
     // <decl>  -> <type> id [=<expr>]; 
         Type t = type();
 	    String id = match(Token.ID);
@@ -61,7 +54,7 @@ public class Parser {
 	        d = new Decl(id, t, e);
 	    } else 
             d = new Decl(id, t);
-
+	    
 	    match(Token.SEMICOLON);
 	    return d;
     }
@@ -76,58 +69,29 @@ public class Parser {
         return ds;             
     }
 
-
-    private Function function() {
-    // <function>  -> fun <type> id(<params>) <stmt> 
-        match(Token.FUN);
-	    Type t = type();
-	    String str = match(Token.ID);
-	    funId = str; 
-	    Function f = new Function(str, t);
-	    match(Token.LPAREN);
-        if (token != Token.RPAREN)
-            f.params = params();
-	    match(Token.RPAREN);
-	    Stmt s = stmt();		
-	    f.stmt = s;
-	    return f;
-    }
-
-    private Decls params() {
-	    Decls params = new Decls();
-        
-		// parse declrations of parameters
-
-        return params;
-    }
-
-
-
     private Type type () {
-    // <type>  ->  int | bool | void | string 
+    // <type>  ->  int | bool | string 
         Type t = null;
         switch (token) {
 	    case INT:
             t = Type.INT; break;
         case BOOL:
             t = Type.BOOL; break;
-        case VOID:
-            t = Type.VOID; break;
         case STRING:
             t = Type.STRING; break;
         default:
-	        error("int | bool | void | string");
+	        error("int | bool | string");
 	    }
         match(token);
         return t;       
     }
   
     private Stmt stmt() {
-    // <stmt> -> <block> | <assignment> | <ifStmt> | <whileStmt> | ...
+    // <stmt> -> <stmts> | <assignment> | <ifStmt> | <whileStmt> | ...
         Stmt s = new Empty();
         switch (token) {
 	    case SEMICOLON:
-            match(Token.SEMICOLON); return s;
+            match(token.SEMICOLON); return s;
         case LBRACE:			
 	        match(Token.LBRACE);		
             s = stmts();
@@ -137,6 +101,13 @@ public class Parser {
             s = ifStmt(); return s;
         case WHILE:      // while statement 
             s = whileStmt(); return s;
+        
+        // TODO: [case DO, FOR]
+        // student exercise : TOKEN이 DO, FOR 일 때 각각 doStmt(), forStmt()를 리턴하도록 해준다.
+        case DO:
+        	s = doStmt(); return s;
+        case FOR:
+        	s = forStmt(); return s;
         case ID:	// assignment
             s = assignment(); return s;
 	    case LET:	// let statement 
@@ -145,15 +116,13 @@ public class Parser {
             s = readStmt(); return s;
 	    case PRINT:	// print statment 
             s = printStmt(); return s;
-	    case RETURN: // return statement 
-            s = returnStmt(); return s;
         default:  
 	        error("Illegal stmt"); return null; 
 	    }
     }
   
     private Stmts stmts () {
-    // <block> -> {<stmt>}
+    // <stmts> -> {<stmt>}
         Stmts ss = new Stmts();
 	    while((token != Token.RBRACE) && (token != Token.END))
 	        ss.stmts.add(stmt()); 
@@ -168,65 +137,33 @@ public class Parser {
         Stmts ss = stmts();
         match(Token.END);	
         match(Token.SEMICOLON);
-        return new Let(ds, null, ss);
+        return new Let(ds, ss);
     }
 
-    // TODO: [Complete the code of readStmt()] done!
     private Read readStmt() {
     // <readStmt> -> read id;
-    //
-    // parse read statement
-    // Read 구문에 관해 Parsing을 진행하는 함수이다. 'Read id;' 문장에 대해 순서대로 match한 후, AST문을 리턴하도록 구현하였다.
-        match(Token.READ);
+    	match(Token.READ);
         Identifier id = new Identifier(match(Token.ID));
         match(Token.SEMICOLON);
         return new Read(id);
     }
 
-    // TODO: [Complete the code of printStmt()] done!
     private Print printStmt() {
     // <printStmt> -> print <expr>;
-    //
-    // parse print statement
-    // Print 구문에 관해 Parsing을 진행하는 함수이다. 'Print <expr>;' 문장에 대해 순서대로 match한 후, AST문을 리턴하도록 구현하였다.
-        match(Token.PRINT);
+    	match(Token.PRINT);
         Expr e = expr();
         match(Token.SEMICOLON);
-	    return new Print(e);
-    }
-
-    private Return returnStmt() {
-    // <returnStmt> -> return <expr>; 
-        match(Token.RETURN);
-        Expr e = expr();
-        match(Token.SEMICOLON);
-        return new Return(funId, e);
+        return new Print(e);
     }
 
     private Stmt assignment() {
     // <assignment> -> id = <expr>;   
         Identifier id = new Identifier(match(Token.ID));
-	
-	    if (token == Token.LPAREN) {
-            return call(id);
-        }   // function call 
-	
-
         match(Token.ASSIGN);
         Expr e = expr();
         match(Token.SEMICOLON);
         return new Assignment(id, e);
     }
-
-
-    private Call call(Identifier id) {
-    // <call> -> id(<expr>{,<expr>});
-    //
-    // parse function call
-    //
-	return null;
-    }
-
 
     private If ifStmt () {
     // <ifStmt> -> if (<expr>) then <stmt> [else <stmt>]
@@ -244,18 +181,83 @@ public class Parser {
         return new If(e, s1, s2);
     }
 
-    // TODO: [Complete the code of whileStmt()] done!
     private While whileStmt () {
     // <whileStmt> -> while (<expr>) <stmt>
-    //
-    // parse while statement
-    // While 구문에 관해 Parsing을 진행하는 함수이다. 'While (<expr>) <stmt>;' 문장에 대해 순서대로 match한 후, AST문을 리턴하도록 구현하였다.
-        match(Token.WHILE);
+    	match(Token.WHILE);
         match(Token.LPAREN);
         Expr e = expr();
         match(Token.RPAREN);
-        Stmt s1 = stmt();
-        return new While(e, s1);
+        Stmt s = stmt();
+        return new While(e, s);
+    }
+    
+    // TODO: [Implement dowhileStmt]
+    private Stmts doStmt() {
+    	// check syntax <dowhileStmt> -> do <stmt> while (<expr>);
+    	// ==> generate AST of [<stmt> <whileStmt>]
+    	// student exercise : language S의 dowhile문의 문법 (<dowhileStmt> -> do <stmt> while (<expr>);)에 따라 순서대로 토큰을 match하고 AST를 생성한다.
+    	// 리턴 타입이 Stmts 이기 때문에 stmt s를 포함한 Stmts를 생성하고 <expr>과 <stmt>로 구성된 while문을 이 Stmts에 포함시켜 Stmts를 리턴한다.
+    	match(Token.DO);
+        Stmt s = stmt();
+        match(Token.WHILE);
+        match(Token.LPAREN);
+        Expr e1 = expr();
+        match(Token.RPAREN);
+        match(Token.SEMICOLON);
+        
+        Stmt whileStmt = new While(e1, s);
+        
+        Stmts stmts = new Stmts(s);
+        stmts.stmts.add(whileStmt);
+       
+        return stmts;
+    }
+
+    // TODO: [Implement forStmt]
+    private Let forStmt() {
+    	// check syntax <forStmt> -> for (<type> id = <expr>; <expr>; id = <expr>) <stmt>
+    	// ==> generate AST of [let <type> id = <expr> in while(<expr>) <stmt> end]
+    	// student exercise : language S의 for문의 문법 (for (<type> id = <expr>; <expr>; id = <expr>) <stmt>)에 따라 토큰을 match하고 AST를 생성한다.
+    	// let문으로 [let <type> id = <expr> in while(<expr>) <stmt> end] 와 같은 형식으로 AST를 생성하기 위해
+    	// <type> id = <expr>;를 decls로 생성, innerStmt와 s를 stmts로 묶어 condition과 함께 while문의 stmts에 포함시킨다. 
+    	// 처음 생성한 decls, while문으로 만든 stmts를 포함시킨 let문을 만들어 리턴한다.
+        match(Token.FOR);
+        match(Token.LPAREN);
+        
+        // <type> id = <expr>;
+        Type type = type();
+        String id = match(Token.ID);
+        match(Token.ASSIGN);
+        Expr initialExpr = expr();
+        match(Token.SEMICOLON);
+        
+        Decls decls = new Decls();
+        Decl init = new Decl(id, type, initialExpr);
+        decls.add(init);
+        
+        // <expr>;
+        Expr condition = expr();
+        match(Token.SEMICOLON);
+        
+        // id = <expr>
+        Identifier id2 = new Identifier(match(Token.ID));
+        match(Token.ASSIGN);
+        Expr updateExpr = expr();
+        
+        Stmt innerStmt = new Assignment(id2, updateExpr);
+
+        match(Token.RPAREN);
+        
+        // <stmt>
+        Stmt s = stmt();
+  
+        Stmts ss = new Stmts();
+        ss.stmts.add(s);
+        ss.stmts.add(innerStmt);
+        Stmt whileStmt = new While(condition, ss);
+        Let letStmt = new Let(decls, new Stmts(whileStmt));
+
+        return letStmt;
     }
 
     private Expr expr () {
@@ -272,34 +274,30 @@ public class Parser {
             match(Token.FALSE);
             return new Value(false);
         }
-
+        
         Expr e = bexp();
-        // TODO: [Complete the code of logical operations for <expr> -> <bexp> {& <bexp> | '|'<bexp>}] done!
-		//
-		// parse logical operations
-		// 논리연산자를 처리한다. AND, OR token이 식별이 될 경우, 새 Operator를 생성하고 두개의 <bexp>를 Binary로 연결한다. 이는 while문을 반복되어 리턴된다.
+        
+        // parse logical operations
         while (token == Token.AND || token == Token.OR) {
             Operator op = new Operator(match(token));
-            Expr e2 = bexp();
-
-            e = new Binary(op, e, e2);
+            Expr b = bexp();
+            e = new Binary(op, e, b);
         }
+        
         return e;
     }
 
-    // TODO: [Complete the code of bexp()] done!
     private Expr bexp() {
         // <bexp> -> <aexp> [ (< | <= | > | >= | == | !=) <aexp> ]
         Expr e = aexp();
-	//
-	// parse relational operations
-	// 비교연산자를 처리한다. 비교연산자들이 식별될 경우, 새로운 Operator를 생성하고 두개의 <aexp>를 Binary로 연결하여 리턴한다.
-        if (token == Token.LT || token == Token.LTEQ || token == Token.GT || token == Token.GTEQ || token == Token.EQUAL || token == Token.NOTEQ) {
-            Operator op = new Operator(match(token));
-            Expr e2 = aexp();
 
-            e = new Binary(op, e ,e2);
+        switch(token) {
+        case LT: case LTEQ: case GT: case GTEQ: case EQUAL: case NOTEQ:
+            Operator op = new Operator(match(token));
+            Expr a = aexp();
+            e = new Binary(op, e, a);
         }
+        
         return e;
     }
   
@@ -325,7 +323,7 @@ public class Parser {
         return t;
     }
   
-    private Expr factor() {
+    private Expr factor() { 
         // <factor> -> [-](id | <call> | literal | '('<aexp> ')')
         Operator op = null;
         if (token == Token.MINUS) 
@@ -336,12 +334,6 @@ public class Parser {
         case ID:
             Identifier v = new Identifier(match(Token.ID));
             e = v;
-            if (token == Token.LPAREN) {  // function call
-                match(Token.LPAREN); 
-                Call c = new Call(v,arguments());
-                match(Token.RPAREN);
-                e = c;
-            } 
             break;
         case NUMBER: case STRLITERAL: 
             e = literal();
@@ -358,19 +350,6 @@ public class Parser {
         if (op != null)
             return new Unary(op, e);
         else return e;
-    }
-  
-    private Exprs arguments() {
-    // arguments -> [ <expr> {, <expr> } ]
-        Exprs es = new Exprs();
-        while (token != Token.RPAREN) {
-            es.add(expr());
-            if (token == Token.COMMA)
-                match(Token.COMMA);
-            else if (token != Token.RPAREN)
-                error("Exprs");
-        }  
-        return es;  
     }
 
     private Value literal( ) {
@@ -408,7 +387,7 @@ public class Parser {
 
                 try {
                     command = parser.command();
-		            if (command != null) command.display(0);    // display AST, TODO: [Uncomment this line]
+		            if (command != null) command.display(0);    // display AST 
                 } catch (Exception e) {
                     System.err.println(e);
                 }
@@ -424,7 +403,7 @@ public class Parser {
 
                 try {
 		             command = parser.command();
-		             if (command != null) command.display(0);      // display AST, TODO: [Uncomment this line]
+		             if (command != null) command.display(0);      // display AST
                 } catch (Exception e) {
                     System.err.println(e); 
                 }
