@@ -53,7 +53,11 @@ public class Sint {
         	// Assign to the array element id[<expr>] of the array represented by the array name.
         	// Replace array element in array represented by array name (not use state.set(id, value!)
         	// ex) Value[] ar = ....;	// Array can be represented the array of Value
-        	//     ar[index] = v;		// Replace array element 
+        	//     ar[index] = v;		// Replace array element 일단 done
+        	Value idValue = state.get(a.id);
+        	Value[] ar = idValue.arrValue();
+        	int index = V(a.ar, state).intValue();
+        	ar[index] = v;
         	return state;
         }
     }
@@ -116,7 +120,10 @@ public class Sint {
 	                // TODO: [Fill the code for array allocation]
 			    	// Regarding array declaration, 
 			    	// create an array (new Value[arraysize])
-			    	// and push (id, new Value(array)) to the state.
+			    	// and push (id, new Value(array)) to the state. 일단 done
+			    	Value[] ar = new Value[decl.arraysize];
+			    	state.push(decl.id, new Value(ar));
+			    	
 	            }
 	            else if (decl.expr == null)
 	                state.push(decl.id, new Value(decl.type));
@@ -198,7 +205,12 @@ public class Sint {
         	// return the value of the array element id[<expr>]
         	// ex) Value v = (Value) state.get(ar.id);
         	//     Value[] vs = v.arrValue();
-        	//     return (vs[index])
+        	//     return (vs[index]) 일단 done
+        	Array ar = (Array)e;
+        	Value v = state.get(ar.id);
+        	int index = V(ar.expr, state).intValue();
+        	Value[] vs = v.arrValue();
+        	return vs[index];
 	    }
         if (e instanceof Binary) {
             Binary b = (Binary) e;

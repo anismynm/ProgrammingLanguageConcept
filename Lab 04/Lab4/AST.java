@@ -336,7 +336,7 @@ class Value extends Expr {
     Type type ( ) { return type; }
 
     public String toString( ) {
-        //if (undef) return "undef";
+        // if (undef) return "undef";
         if (type == Type.INT) return "" + intValue(); 
         if (type == Type.BOOL) return "" + boolValue();
 	    if (type == Type.STRING) return "" + stringValue();

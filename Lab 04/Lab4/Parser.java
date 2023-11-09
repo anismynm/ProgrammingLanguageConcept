@@ -51,9 +51,13 @@ public class Parser {
 	   Decl d = null;
 
 	   if (token == Token.LBRACKET) {
-		   // TODO: [Fill the code for array declaration (<type> id [n];)]
+		   // TODO: [Fill the code for array declaration (<type> id [n];)] 일단 Done
 		   // Use the AST of "Decl (String s, Type t, int n)"
 		   // ex) Value n = literal();, n.intValue() ...
+		   match(Token.LBRACKET);
+		   Value n = literal();
+		   d = new Decl(id, t, n.intValue());
+		   match(Token.RBRACKET);
        } else if (token == Token.ASSIGN) {
 	        match(Token.ASSIGN);
             Expr e = expr();
@@ -170,7 +174,11 @@ public class Parser {
 
         if (token == Token.LBRACKET) {  // id[<expr>] = <expr>;
         	// TODO: [Fill the code for assignment to array elements]
-        	// Set the AST of Array(Identifier s, Expr e) to Array ar
+        	// Set the AST of Array(Identifier s, Expr e) to Array ar 일단 done
+        	match(Token.LBRACKET);
+        	Expr n = expr();
+        	match(Token.RBRACKET);
+        	ar = new Array(id, n);
         }
 
         match(Token.ASSIGN);
@@ -316,7 +324,11 @@ public class Parser {
             e = v;
             if (token == Token.LBRACKET) {	// id[<expr>]
             	// TODO: [Fill the code for using array elements]
-            	// Set the AST of Array(Identifier s, Expr e) to Expr e
+            	// Set the AST of Array(Identifier s, Expr e) to Expr e 일단 done
+            	match(Token.LBRACKET);
+            	Expr n = expr();
+            	match(Token.RBRACKET);
+            	e = new Array(v, n);
             }
             break;
         case NUMBER: case STRLITERAL: 
