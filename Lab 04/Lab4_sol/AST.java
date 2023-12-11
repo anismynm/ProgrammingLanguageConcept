@@ -125,6 +125,7 @@ class Assignment extends Stmt {
 
     // Here
     Assignment (Array a, Expr e) {
+    	id = a.id; 
         ar = a;
         expr = e;
     }
@@ -237,6 +238,15 @@ class Raise extends Stmt {
 
     Raise(Identifier id) {
         eid = id;
+    }
+}
+
+class Exprs extends ArrayList<Expr> {
+    // Exprs = Expr*
+    public void display(int level) {
+       for (Expr e: this) {
+           e.display(level+1);
+       } 
     }
 }
 

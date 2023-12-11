@@ -51,13 +51,11 @@ public class Parser {
 	   Decl d = null;
 
 	   if (token == Token.LBRACKET) {
-		   match(Token.LBRACKET);
-		   Value num = literal();
-		   match(Token.RBRACKET);
-		   int n = num.intValue();
-		   d = new Decl(id, t, n);
-		   // 배열 변수에 대한 선언문을 정의한 코드로, id 다음 나오는 토큰이 '['일 경우 배열의 선언으로 간주하여
-		   // 파싱을 통해 배열 크기 n을 가져오고 id, type, n으로 새로운 decl 객체를 생성한다.
+		// TODO: [Fill the code for array declaration (<type> id [n];)]
+           match(Token.LBRACKET);
+           Value v = literal(); 
+	       d = new Decl(id, t, v.intValue());
+           match(Token.RBRACKET);
        } else if (token == Token.ASSIGN) {
 	        match(Token.ASSIGN);
             Expr e = expr();
@@ -173,12 +171,10 @@ public class Parser {
         Identifier id = new Identifier(match(Token.ID));
 
         if (token == Token.LBRACKET) {  // id[<expr>] = <expr>;
-        	match(Token.LBRACKET);
-        	Expr expr = expr();
-        	ar = new Array(id, expr);
-        	match(Token.RBRACKET);
-        	// 배열 변수에 대한 할당문을 정의한 코드로 id 다음으로 '['이 나올 경우 배열 변수로 인식, 
-        	// [<expr>] 부분을 파싱하여 배열의 인덱스를 나타내는 <expr> 객체를 생성하고 이를 통해 새로운 Array 객체를 생성한다.
+        	// TODO: [Fill the code for assignment to array elements]
+            match(Token.LBRACKET); 
+            ar = new Array(id, expr());
+            match(Token.RBRACKET);
         }
 
         match(Token.ASSIGN);
@@ -323,12 +319,11 @@ public class Parser {
             Identifier v = new Identifier(match(Token.ID));
             e = v;
             if (token == Token.LBRACKET) {	// id[<expr>]
-            	match(Token.LBRACKET);
-            	Expr expr = expr();
-            	match(Token.RBRACKET);
-            	e = new Array(v, expr);
-            	// 배열 변수에 대한 factor 연산을 처리하는 코드이다. id 다음 '[' 토큰이 나올 경우 
-            	// 배열 인덱스 부분을 expr() 객체를 생성하여 처리하고 새로운 Array 객체를 생성한다.
+            	// TODO: [Fill the code for using array elements]
+                match(Token.LBRACKET); 
+                Array a = new Array(v,expr());
+                match(Token.RBRACKET);
+                e = a;
             }
             break;
         case NUMBER: case STRLITERAL: 

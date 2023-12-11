@@ -48,16 +48,14 @@ public class Sint {
         
         if (a.ar == null)
 	        return state.set(a.id, v);
-        else {	// id[<expr>] = <expr>;
-        	Identifier arrayId = a.ar.id;
-            int index = V(a.ar.expr, state).intValue();
-
-            Value arrayValue = (Value) state.get(arrayId);
-            Value[] arrayElements = arrayValue.arrValue();
-            arrayElements[index] = v;
-            // 배열 요소에 값을 할당하는 코드이다. 배열 a에서는 식별자와 배열의 인덱스 부분의 정수형을 가져오고,
-            // state에서는 Value형의 배열의 값과 Value[]형의 배열의 요소들을 가져와 배열의 해당 인덱스에 v라는 새로운 값을 할당하고 상태를 반환한다.
-        	return state;
+        else {
+        	// TODO: [Fill the code for assignment of an array element]
+        	// Lab04 answer
+            Value i = V(a.ar.expr, state);
+            Value val = state.get(a.ar.id);
+            Value[] ar = (Value[]) val.arrValue();
+            ar[i.intValue()] = v;
+            return state;
         }
     }
 
@@ -115,11 +113,10 @@ public class Sint {
     	// add entries for declared variables (ds) on the state
         if (ds != null) {
         	for (Decl decl : ds) 
-			    if (decl.arraysize > 0) { // <type> id[n];
-			    	Value[] newArray = new Value[decl.arraysize];
-			        state.push(decl.id, new Value(newArray));
-	                // 선언된 배열 변수를 state에 할당하는 코드이다. 배열크기가 0보다 큰 경우 배열 변수로 간주하여
-			        // 그 크기만큼의 새로운 배열을 생성하여 state에 추가하고 state를 리턴한다.
+			    if (decl.arraysize > 0) {
+			    	// TODO: [Fill the code for array allocation]
+	                Value[] ar = new Value[decl.arraysize];
+	                state.push(decl.id, new Value(ar)); 
 	            }
 	            else if (decl.expr == null)
 	                state.push(decl.id, new Value(decl.type));
@@ -196,15 +193,12 @@ public class Sint {
             return (Value)(state.get(v));
 	    }
         if (e instanceof Array) { // id[<expr>]
-        	Array arrayExpr = (Array) e;
-            Identifier arrayId = arrayExpr.id;
-            int index = V(arrayExpr.expr, state).intValue();
-
-            Value arrayValue = (Value) state.get(arrayId);
-            Value[] arrayElements = arrayValue.arrValue();
-            return arrayElements[index];
-            // Expr 객체 'e'를 평가하고 그 결과를 나타내는 Value 객체를 반환하는 함수로,
-	        // Expr 객체 'e'가 배열 변수일 경우 배열의 식별자와 인덱스를 가져와서 배열의 해당 인덱스 위치의 값을 반환한다.
+        	// TODO: [Fill the code for array expr]
+	        Array ar = (Array) e;
+            Value i = V(ar.expr, state);
+            Value v = (Value) state.get(ar.id);
+            Value[] vs = v.arrValue(); 
+            return (vs[i.intValue()]); 
 	    }
         if (e instanceof Binary) {
             Binary b = (Binary) e;

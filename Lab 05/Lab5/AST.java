@@ -10,7 +10,7 @@ class Indent {
             tab = tab + "  ";
         System.out.print(tab + s);
    }
-}
+} 
 
 abstract class Command {
     // Command = Decl | Function | Stmt
@@ -34,7 +34,6 @@ class Decls extends ArrayList<Decl> {
 
 class Decl extends Command {
     // Decl = Type type; Identifier id 
-	Type type;
     Identifier id;
     Expr expr = null;
     int arraysize = 0;
@@ -43,11 +42,10 @@ class Decl extends Command {
         id = new Identifier(s); type = t;
     } // declaration 
 
-    // Here
     Decl (String s, Type t, int n) {
         id = new Identifier(s); type = t; arraysize = n;
     } // array declaration 
-    
+
     Decl (String s, Type t, Expr e) {
         id = new Identifier(s); type = t; expr = e;
     } // declaration 
@@ -61,6 +59,40 @@ class Decl extends Command {
     }
 }
 
+// [Function]
+class Functions extends ArrayList<Function> {
+    // Functions = Function*
+	
+    public void display (int level) { 
+        Indent.display(level, "Functions");
+        for (Function f : this) {
+            f.display(level+1); 
+            System.out.println();
+        }
+    }
+}
+
+//[Function]
+class Function extends Command  {
+    // Function = Type type; Identifier id; Decls params; Stmt stmt
+    Identifier id;
+    Decls params;
+    Stmt stmt;
+   
+    Function(String s, Type t) { 
+        id = new Identifier(s); type = t; params = null; stmt = null;
+    }
+
+    public String toString ( ) { 
+       return id.toString()+params.toString(); 
+    }
+    
+    public void display (int level) {
+       Indent.display(level,"Function = " + id + "; Return type = " + type.id);
+       Indent.display(level,"  Params = "); params.display(level+1);
+       stmt.display(level+1);
+    }
+}
 
 class Type {
     // Type = int | bool | string | fun | array | except | void
@@ -68,6 +100,7 @@ class Type {
     final static Type BOOL = new Type("bool");
     final static Type STRING = new Type("string");
     final static Type VOID = new Type("void");
+    final static Type FUN = new Type("fun");
     final static Type ARRAY = new Type("array");
     final static Type EXC = new Type("exc");
     final static Type RAISEDEXC = new Type("raisedexc");
@@ -77,10 +110,38 @@ class Type {
     protected String id;
     protected Type(String s) { id = s; }
     public String toString ( ) { return id; }
-    
+
     public void display(int l) {
         Indent.display(l, "Type: "+id);
     }
+}
+
+//[Function]
+class ProtoType extends Type {
+   // defines the type of a function and its parameters
+   Type result;  
+   Decls params;
+   
+   ProtoType (Type t, Decls ds) {
+      super(t.id);
+      result = t;
+      params = ds;
+   }
+
+   public String toString ( ) { 
+       String s = "(";
+       String sep = "";
+       for (Decl param : params) {
+            s = s + sep + param.type;
+	    sep = ",";
+       }
+	   s = s + ") -> " + result;
+       return s;
+   }
+
+   public void display (int level) {
+        params.display(level); 
+   }
 }
 
 abstract class Stmt extends Command {
@@ -123,7 +184,6 @@ class Assignment extends Stmt {
         expr = e;
     }
 
-    // Here
     Assignment (Array a, Expr e) {
         ar = a;
         expr = e;
@@ -167,7 +227,6 @@ class While extends Stmt {
     While (Expr t, Stmt b) {
         expr = t; stmt = b;
     }
-    
     public void display(int level) {
 	    Indent.display(level, "While");
 	    expr.display(level+1);
@@ -176,8 +235,9 @@ class While extends Stmt {
 }
 
 class Let extends Stmt {
-    // Let = Decls decls; Stmts stmts;
+    // Let = Decls decls; Functions funs; Stmts stmts;
     Decls decls;
+    Functions funs;
     Stmts stmts;
     
     Let(Decls ds, Stmts ss) {
@@ -185,9 +245,18 @@ class Let extends Stmt {
         stmts = ss;
     } 
 
+    // [function]
+    Let(Decls ds, Functions fs, Stmts ss) {
+        decls = ds;
+	    funs = fs;
+        stmts = ss;
+    }
+
     public void display(int level) {
 	    Indent.display(level, "Let");
 		decls.display(level+1);
+	    if (funs != null) 
+           funs.display(level+1);
 	    stmts.display(level+1);
     }
 }
@@ -219,6 +288,25 @@ class Print extends Stmt {
     }
 }
 
+//[Function]
+class Return extends Stmt {
+    Identifier fid;
+    Expr expr;
+
+    Return (String s, Expr e) {
+        fid = new Identifier(s);
+        expr = e;
+    }
+    
+    public void display (int level) {
+        Indent.display(level, "Return");
+        if (fid!=null)
+           fid.display(level+1);
+        else System.out.print("fid: null");
+        expr.display(level+1);
+     }
+}
+
 class Try extends Stmt {
     // Try = Identifier id; Stmt stmt1; Stmt stmt2; 
     Identifier eid;
@@ -240,8 +328,35 @@ class Raise extends Stmt {
     }
 }
 
+class Exprs extends ArrayList<Expr> {
+    // Exprs = Expr*
+	
+    public void display(int level) {
+    	for (Expr e: this) {
+            e.display(level+1);
+        } 
+    }
+}
+
 abstract class Expr extends Stmt {
     // Expr = Identifier | Value | Binary | Unary | Call
+}
+
+//[Function]
+class Call extends Expr { 
+    Identifier fid;  
+    Exprs args;
+
+    Call(Identifier id, Exprs a) {
+       fid = id;
+       args = a;
+    }
+
+    public void display (int level) {
+        Indent.display(level, "Call : " + fid);
+        Indent.display(level,"  args = ");
+        args.display(level+1);
+    }
 }
 
 class Identifier extends Expr {
@@ -262,7 +377,6 @@ class Identifier extends Expr {
     }
 }
 
-//Here
 class Array extends Expr {
     // Array = Identifier id; Expr expr
     Identifier id;
@@ -280,7 +394,7 @@ class Array extends Expr {
     public void display(int level) {
     	Indent.display(level,  "Array");
     	System.out.print(": " + id);
-    	// expr.display(level+1);
+    	expr.display(level+1);
     }
     
 }
@@ -302,6 +416,7 @@ class Value extends Expr {
         if (v instanceof Integer) type = Type.INT;
         if (v instanceof Boolean) type = Type.BOOL;
         if (v instanceof String) type = Type.STRING;
+        if (v instanceof Function) type = Type.FUN; 
         if (v instanceof Value[]) type = Type.ARRAY;
         value = v; undef = false; 
     }
@@ -326,7 +441,12 @@ class Value extends Expr {
         else return "";
     }
 
-    // Here
+    Function funValue ( ) {
+        if (value instanceof Function) 
+            return (Function) value; 
+        else return null;
+    }
+
     Value[] arrValue ( ) {
         if (value instanceof Value[]) 
             return (Value[]) value; 
@@ -336,14 +456,14 @@ class Value extends Expr {
     Type type ( ) { return type; }
 
     public String toString( ) {
-        //if (undef) return "undef";
+        // if (undef) return "undef";
         if (type == Type.INT) return "" + intValue(); 
         if (type == Type.BOOL) return "" + boolValue();
 	    if (type == Type.STRING) return "" + stringValue();
+        if (type == Type.FUN) return "" + funValue(); // Lab05
         if (type == Type.ARRAY) return "" + arrValue();
         return "undef";
     }
-    
     public void display(int level) {
 	     Indent.display(level, "Value: " + this.toString());
     }
@@ -387,16 +507,17 @@ class Operator {
     String val;
     
     Operator (String s) { 
-	val = s; 
+    	val = s; 
     }
 
     public String toString( ) { 
-	return val; 
+    	return val; 
     }
 
     public boolean equals(Object obj) { 
-	return val.equals(obj); 
+    	return val.equals(obj); 
     }
+    
     public void display(int l) {
 	    Indent.display(l, "Operator:" + val);
     }

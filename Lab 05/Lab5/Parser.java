@@ -31,10 +31,14 @@ public class Parser {
     }
   
     public Command command() {
-    // <command> ->  <decl> | <stmt>
+    // <command> ->  <decl> | <function> | <stmt>
 	    if (isType()) {
 	        Decl d = decl();
 	        return d;
+	    }
+	    if (token == Token.FUN) { 
+	        Function f = function();
+	        return f;
 	    }
 	    if (token != Token.EOF) {
 	        Stmt s = stmt();
@@ -45,19 +49,16 @@ public class Parser {
 
     private Decl decl() {
        // <decl> -> <type> id [n]; 
-       // <decl> -> <type> id [=<expr>];
+       // <decl>  -> <type> id [=<expr>]; 
        Type t = type();
 	   String id = match(Token.ID);
 	   Decl d = null;
-
+	   
 	   if (token == Token.LBRACKET) {
-		   match(Token.LBRACKET);
-		   Value num = literal();
-		   match(Token.RBRACKET);
-		   int n = num.intValue();
-		   d = new Decl(id, t, n);
-		   // 배열 변수에 대한 선언문을 정의한 코드로, id 다음 나오는 토큰이 '['일 경우 배열의 선언으로 간주하여
-		   // 파싱을 통해 배열 크기 n을 가져오고 id, type, n으로 새로운 decl 객체를 생성한다.
+           match(Token.LBRACKET);
+           Value v = literal(); 
+	       d = new Decl(id, t, v.intValue());
+           match(Token.RBRACKET);
        } else if (token == Token.ASSIGN) {
 	        match(Token.ASSIGN);
             Expr e = expr();
@@ -77,6 +78,50 @@ public class Parser {
 	        ds.add(d);
 	    }
         return ds;             
+    }
+
+    // [Function]
+    private Functions functions () {
+    // <functions> -> { <function> }
+	    Functions fs = new Functions();  
+        while (token == Token.FUN) {
+	        Function f = function(); 
+	        fs.add(f);
+        }  
+        return fs;          	
+    }
+    
+    // [Function]
+    private Function function() {
+    // <function>  -> fun <type> id(<params>) <stmt> 
+	    match(Token.FUN);
+	    Type t = type();
+	    String str = match(Token.ID);
+	    funId = str; 
+	    Function f = new Function(str, t);
+	    match(Token.LPAREN);
+        if (token != Token.RPAREN)
+            f.params = params();
+	    match(Token.RPAREN);
+	    Stmt s = stmt();		
+	    f.stmt = s;
+	    return f;
+    }
+
+    // [Function]
+    private Decls params() {
+	    Decls params = new Decls();
+	    // TODO: [Implement the code of params]
+	    Type t = type();
+	    String id = match(Token.ID);
+	    params.add(new Decl(id, t));
+        while (token == Token.COMMA) {
+	        match(Token.COMMA);
+	        t = type();
+            id = match(Token.ID);
+            params.add(new Decl(id, t));
+         }
+        return params;
     }
 
     private Type type () {
@@ -125,6 +170,9 @@ public class Parser {
             s = readStmt(); return s;
 	    case PRINT:	// print statment 
             s = printStmt(); return s;
+        // [Function]
+	    case RETURN:	// return statement  
+            s = returnStmt(); return s;
         default:  
 	        error("Illegal stmt"); return null; 
 	}
@@ -139,14 +187,23 @@ public class Parser {
     }
 
     private Let letStmt () {
-    // <letStmt> -> let <decls> in <block> end
+    // <letStmt> -> let <decls> <functions> in <stmts> end
 	    match(Token.LET);	
         Decls ds = decls();
+        
+        // [Function] : let문을 파싱할 때 함수가 존재할 경우 functions 객체를 새로 생성한다.
+        // TODO: [Implement the code for function declaration in let stmt]
+        Functions fs = null;
+        // There is a Function declaration in Let statement
+        if(token == Token.FUN) {
+        fs = functions();
+        }
+        
 	    match(Token.IN);
         Stmts ss = stmts();
         match(Token.END);	
         match(Token.SEMICOLON);
-        return new Let(ds, ss);
+        return new Let(ds, fs, ss);
     }
 
     private Read readStmt() {
@@ -165,20 +222,24 @@ public class Parser {
         return new Print(e);
     }
 
+    private Return returnStmt() {
+    // <returnStmt> -> return <expr>; 
+        match(Token.RETURN);
+        Expr e = expr();
+        match(Token.SEMICOLON);
+        return new Return(funId, e);
+    }
+
     private Stmt assignment() {
-    // <assignment> -> id[<expr>] = <expr>;
-    // <assignment> -> id = <expr>;  
-    
+    // <assignment> -> id = <expr>;   
 	    Array ar = null;  
         Identifier id = new Identifier(match(Token.ID));
-
-        if (token == Token.LBRACKET) {  // id[<expr>] = <expr>;
-        	match(Token.LBRACKET);
-        	Expr expr = expr();
-        	ar = new Array(id, expr);
-        	match(Token.RBRACKET);
-        	// 배열 변수에 대한 할당문을 정의한 코드로 id 다음으로 '['이 나올 경우 배열 변수로 인식, 
-        	// [<expr>] 부분을 파싱하여 배열의 인덱스를 나타내는 <expr> 객체를 생성하고 이를 통해 새로운 Array 객체를 생성한다.
+	    if (token == Token.LPAREN) 
+	        return call(id);
+        if (token == Token.LBRACKET) {  
+            match(Token.LBRACKET); 
+            ar = new Array(id, expr());
+            match(Token.RBRACKET);
         }
 
         match(Token.ASSIGN);
@@ -189,6 +250,18 @@ public class Parser {
             return new Assignment(id, e);
         else 
             return new Assignment(ar, e);
+    }
+    
+    // [Function] : 함수를 호출하는 구문법에 대한 처리를 담당한다. 주어진 구문법에 따라 파싱을 진행하고 새로운 Call 객체를 생성하여 리턴한다.
+    private Call call(Identifier id) {
+    // <call> -> id(<expr>{,<expr>});
+    	// TODO: [Implement the code of call stmt]
+    	match(Token.LPAREN);
+        Call c = new Call(id, arguments());
+    	match(Token.RPAREN);
+    	match(Token.SEMICOLON);
+    	return c;
+    	
     }
 
     private If ifStmt () {
@@ -248,7 +321,7 @@ public class Parser {
         Stmts s1 = new Stmts(s); 
 	    s1.stmts.add(assign);
 	    Stmts s2 = new Stmts(new While(e1,s1));
-	    return new Let(ds, s2);
+        return new Let(ds, null, s2);
     }
 
     private Expr expr () {
@@ -267,7 +340,7 @@ public class Parser {
         }
 
         Expr e = bexp();
-     // parse logical operations
+        // parse logical operations
         while (token == Token.AND || token == Token.OR) {
             Operator op = new Operator(match(token));
             Expr b = bexp();
@@ -279,7 +352,6 @@ public class Parser {
     private Expr bexp() {
         // <bexp> -> <aexp> [ (< | <= | > | >= | == | !=) <aexp> ]
         Expr e = aexp();
-        
         switch(token) {
         case LT: case LTEQ: case GT: case GTEQ: case EQUAL: case NOTEQ:
             Operator op = new Operator(match(token));
@@ -312,7 +384,7 @@ public class Parser {
     }
   
     private Expr factor() {
-        // <factor> -> [-](id | id'['<expr>']' | <call> | literal | '('<aexp> ')')
+        // <factor> -> [-](id | <call> | literal | '('<aexp> ')')
         Operator op = null;
         if (token == Token.MINUS) 
             op = new Operator(match(Token.MINUS));
@@ -322,13 +394,16 @@ public class Parser {
         case ID:
             Identifier v = new Identifier(match(Token.ID));
             e = v;
-            if (token == Token.LBRACKET) {	// id[<expr>]
-            	match(Token.LBRACKET);
-            	Expr expr = expr();
-            	match(Token.RBRACKET);
-            	e = new Array(v, expr);
-            	// 배열 변수에 대한 factor 연산을 처리하는 코드이다. id 다음 '[' 토큰이 나올 경우 
-            	// 배열 인덱스 부분을 expr() 객체를 생성하여 처리하고 새로운 Array 객체를 생성한다.
+            if (token == Token.LPAREN) {  // function call
+                match(Token.LPAREN); 
+                Call c = new Call(v, arguments());
+                match(Token.RPAREN);
+                e = c;
+            } else if (token == Token.LBRACKET) {  
+                match(Token.LBRACKET); 
+                Array a = new Array(v,expr());
+                match(Token.RBRACKET);
+                e = a;
             }
             break;
         case NUMBER: case STRLITERAL: 
@@ -346,6 +421,19 @@ public class Parser {
         if (op != null)
             return new Unary(op, e);
         else return e;
+    }
+  
+    private Exprs arguments() {
+    // arguments -> [ <expr> {, <expr> } ]
+        Exprs es = new Exprs();
+        while (token != Token.RPAREN) {
+            es.add(expr());
+            if (token == Token.COMMA)
+                match(Token.COMMA);
+            else if (token != Token.RPAREN)
+                error("Exprs");
+        }  
+        return es;  
     }
 
     private Value literal( ) {
@@ -383,7 +471,7 @@ public class Parser {
 
                 try {
                     command = parser.command();
-		            if (command != null) command.display(0);    // display AST 
+//		            if (command != null) command.display(0);    // display AST 
                 } catch (Exception e) {
                     System.err.println(e);
                 }
@@ -399,7 +487,7 @@ public class Parser {
 
                 try {
 		             command = parser.command();
-		             if (command != null) command.display(0);      // display AST
+//		             if (command != null) command.display(0);      // display AST
                 } catch (Exception e) {
                     System.err.println(e); 
                 }
